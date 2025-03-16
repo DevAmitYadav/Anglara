@@ -8,7 +8,7 @@ import rateLimit from "express-rate-limit";
 import { fileURLToPath } from "url";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
-import categoryRoutes from "./routes/categoryRoutes.js"; // 🔹 Import Category Routes
+import categoryRoutes from "./routes/categoryRoutes.js";
 import { errorMiddleware, notFoundMiddleware } from "./middlewares/errorMiddleware.js";
 import cookieParser from "cookie-parser";
 
@@ -31,22 +31,21 @@ app.use(
   })
 );
 
-// 🔹 CORS Setup (Allow All Origins)
-const allowedOrigins = [
-  "https://anglara.vercel.app",  // Development Frontend
-  "https://anglara-mmxvv9mq1-amit-yadavs-projects-94d03317.vercel.app" // Production Frontend
-];
-
+// 🔹 CORS Setup
 app.use(
   cors({
-    origin: allowedOrigins, // Allow only specific frontend URLs
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true, // Allow cookies & auth headers
+    origin: "*",
+    credentials: true,
   })
 );
 
-
+// ✅ Handle Preflight Requests
+app.options("*", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  res.sendStatus(200);
+});
 
 // 🔹 Body Parser Middleware
 app.use(express.json());
