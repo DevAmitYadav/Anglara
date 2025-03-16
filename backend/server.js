@@ -32,14 +32,20 @@ app.use(
 );
 
 // 🔹 CORS Setup (Allow All Origins)
+const allowedOrigins = [
+  "http://localhost:3000",  // Development Frontend
+  "https://anglara-mmxvv9mq1-amit-yadavs-projects-94d03317.vercel.app" // Production Frontend
+];
+
 app.use(
   cors({
-    origin: ["https://anglara.vercel.app"], // ✅ Allow frontend
-    credentials: true, // Allow cookies & authentication headers
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: allowedOrigins, // Allow only specific frontend URLs
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // Allow cookies & auth headers
   })
 );
+
 
 
 // 🔹 Body Parser Middleware
