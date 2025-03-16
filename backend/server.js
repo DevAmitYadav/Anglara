@@ -33,7 +33,7 @@ app.use(
 
 // 🔹 CORS Setup (Allow All Origins)
 const allowedOrigins = [
-  "http://localhost:3000",  // Development Frontend
+  "https://anglara.vercel.app",  // Development Frontend
   "https://anglara-mmxvv9mq1-amit-yadavs-projects-94d03317.vercel.app" // Production Frontend
 ];
 
