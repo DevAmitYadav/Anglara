@@ -12,11 +12,13 @@ import categoryRoutes from "./routes/categoryRoutes.js"; // 🔹 Import Category
 import { errorMiddleware, notFoundMiddleware } from "./middlewares/errorMiddleware.js";
 import cookieParser from "cookie-parser";
 
-
 dotenv.config();
 connectDB();
 
 const app = express();
+
+// 🔹 Set API Identifier
+app.res = "Multi-Level Category Management API";
 
 // 🔹 Security Middlewares
 app.use(helmet()); // Adds security headers
@@ -29,17 +31,15 @@ app.use(
   })
 );
 
-// 🔹 CORS Setup
+// 🔹 CORS Setup (Allow All Origins)
 app.use(
   cors({
-    origin: "*", // Allow all origins
+    origin: "*", // Allow requests from any origin
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
-
 
 // 🔹 Body Parser Middleware
 app.use(express.json());
@@ -52,9 +52,14 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use(cookieParser());
 
+// 🔹 Root Route (Show API Name in H1)
+app.get("/", (req, res) => {
+  res.send(`<h1>${app.res}</h1>`);
+});
+
 // 🔹 API Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/categories", categoryRoutes); 
+app.use("/api/categories", categoryRoutes);
 
 // 🔹 Handle 404 Errors
 app.use(notFoundMiddleware);
