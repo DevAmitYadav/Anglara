@@ -34,12 +34,13 @@ app.use(
 // 🔹 CORS Setup (Allow All Origins)
 app.use(
   cors({
-    origin: "*", // Allow requests from any origin
-    credentials: true,
+    origin: ["https://anglara.vercel.app"], // ✅ Allow frontend
+    credentials: true, // Allow cookies & authentication headers
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
 
 // 🔹 Body Parser Middleware
 app.use(express.json());
