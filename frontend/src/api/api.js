@@ -5,7 +5,7 @@ import API_ENDPOINTS from "./endpoints"; // Make sure you have this file with yo
 
 // ─── Create Axios Instance ─────────────────────────────────────────
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  baseURL: import.meta.env.VITE_API_URL || "https://anglara-backend.onrender.com/api",
   // Optionally, add a timeout or other axios config options here
 });
 
