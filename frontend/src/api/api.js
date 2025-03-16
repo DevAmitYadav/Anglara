@@ -1,15 +1,23 @@
 // api.js
 
 import axios from "axios";
-import API_ENDPOINTS from "./endpoints"; // Make sure you have this file with your endpoint definitions
+import API_ENDPOINTS from "./endpoints"; // Ensure this file has your API endpoints
 
-// ─── Create Axios Instance ─────────────────────────────────────────
+// ─── Base URL Configuration ───────────────────────────────────────────────
+const BASE_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://anglara-backend.onrender.com/api" // Production API
+    : "http://localhost:5000/api"; // Local development API
+
+// ─── Create Axios Instance ────────────────────────────────────────────────
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://anglara-backend.onrender.com/api",
-  // Optionally, add a timeout or other axios config options here
+  baseURL: BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-// ─── Error Message Extractor ───────────────────────────────────────
+// ─── Extract Error Message ────────────────────────────────────────────────
 const extractErrorMessage = (error) => {
   return (
     error?.response?.data?.errors?.[0]?.msg ||
@@ -19,13 +27,13 @@ const extractErrorMessage = (error) => {
   );
 };
 
-// ─── Get Authorization Headers ─────────────────────────────────────
+// ─── Get Authorization Headers ─────────────────────────────────────────────
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-// ─── Refresh Token Function ──────────────────────────────────────────
+// ─── Refresh Token Function ───────────────────────────────────────────────
 const refreshToken = async () => {
   try {
     const refreshTokenValue = localStorage.getItem("refreshToken");
@@ -33,18 +41,15 @@ const refreshToken = async () => {
       throw new Error("No refresh token found");
     }
 
-    // Call the refresh token endpoint
     const { data } = await api.post(API_ENDPOINTS.AUTH.REFRESH_TOKEN, {
       token: refreshTokenValue,
     });
 
-    // Get the new token (adjust the property name if necessary)
     const newToken = data.newToken || data.token;
     if (!newToken) {
       throw new Error("New token not provided");
     }
 
-    // Store new token and update default headers
     localStorage.setItem("token", newToken);
     api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
 
@@ -56,18 +61,15 @@ const refreshToken = async () => {
   }
 };
 
-// ─── Logout Function ──────────────────────────────────────────────────
+// ─── Logout Function ───────────────────────────────────────────────────────
 const logoutUser = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("refreshToken");
-  localStorage.removeItem("user");
-  window.location.href = "/login";
+  localStorage.clear(); // Clears all stored user data
+  window.location.replace("/login"); // Forces a full page reload to login
 };
 
-// ─── Request Interceptor ─────────────────────────────────────────────
+// ─── Request Interceptor ──────────────────────────────────────────────────
 api.interceptors.request.use(
   (config) => {
-    // Always attach the latest token from localStorage
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -77,13 +79,12 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ─── Response Interceptor for Token Refresh ──────────────────────────
+// ─── Response Interceptor for Token Refresh ───────────────────────────────
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // If a 401 error occurs and this request wasn't already retried
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       const newToken = await refreshToken();
@@ -97,12 +98,11 @@ api.interceptors.response.use(
   }
 );
 
-// ─── FormData Builder Helper ─────────────────────────────────────────
+// ─── FormData Builder Helper ──────────────────────────────────────────────
 const buildFormData = (data, formData = new FormData(), parentKey = "") => {
   if (data && typeof data === "object" && !(data instanceof File)) {
     Object.keys(data).forEach((key) => {
       const value = data[key];
-      // Example: remap "image" field to "profilePic" if needed
       const mappedKey = key === "image" ? "profilePic" : key;
       const fieldKey = parentKey ? `${parentKey}[${mappedKey}]` : mappedKey;
 
@@ -124,4 +124,4 @@ const buildFormData = (data, formData = new FormData(), parentKey = "") => {
   return formData;
 };
 
-export { api, extractErrorMessage, getAuthHeaders, buildFormData };
+export { api, extractErrorMessage, getAuthHeaders, buildFormData, logoutUser };
