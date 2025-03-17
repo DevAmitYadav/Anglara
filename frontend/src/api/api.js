@@ -4,10 +4,8 @@ import axios from "axios";
 import API_ENDPOINTS from "./endpoints"; // Ensure this file has your API endpoints
 
 // ─── Base URL Configuration ───────────────────────────────────────────────
-const BASE_URL =
-  process.env.NODE_ENV === "production"
-    ? "https://anglara-backend.onrender.com/api" // Production API
-    : "http://localhost:5000/api"; // Local development API
+const BASE_URL = import.meta.env.VITE_API_URL || "https://anglara-backend.onrender.com/api";
+
 
 // ─── Create Axios Instance ────────────────────────────────────────────────
 const api = axios.create({
