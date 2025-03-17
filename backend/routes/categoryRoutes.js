@@ -15,7 +15,7 @@ const router = express.Router();
  * @desc    Create a new category (Admins Only)
  * @access  Private (Admin)
  */
-router.post("/", protectRoute(["Admin"]), createCategory);
+router.post("/", protectRoute(["admin"]), createCategory);
 
 /**
  * @route   GET /api/categories
@@ -29,20 +29,20 @@ router.get("/", protectRoute(["admin"]), getCategories);
  * @desc    Update category (name/status) - Admins Only
  * @access  Private (Admin)
  */
-router.put("/:id", protectRoute(["Admin"]), updateCategory);
+router.put("/:id", protectRoute(["admin"]), updateCategory);
 
 /**
  * @route   PUT /api/categories/bulk-update
  * @desc    Bulk update category status (Active/Inactive)
  * @access  Private (Admin)
  */
-router.put("/bulk-update", protectRoute(["Admin"]), bulkUpdateCategoryStatus);
+router.put("/bulk-update", protectRoute(["admin"]), bulkUpdateCategoryStatus);
 
 /**
  * @route   DELETE /api/categories/:id
  * @desc    Delete a category and reassign subcategories - Admins Only
  * @access  Private (Admin)
  */
-router.delete("/:id", protectRoute(["Admin"]), deleteCategory);
+router.delete("/:id", protectRoute(["admin"]), deleteCategory);
 
 export default router;
