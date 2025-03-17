@@ -10,6 +10,10 @@ import {
 // Improved error extractor to handle various error shapes
 const extractErrorMessage = (error, fallbackMessage) => {
   if (error?.response && error.response.data) {
+    // Handle case where message might be an array
+    if (Array.isArray(error.response.data.message)) {
+      return error.response.data.message.join(", ");
+    }
     if (error.response.data.message) return error.response.data.message;
     if (typeof error.response.data === "string") return error.response.data;
   }
@@ -22,6 +26,7 @@ export const registerUserAction = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const response = await registerUserApi(userData);
+      // Optionally return response.data if your API returns full Axios response:
       return response;
     } catch (error) {
       return rejectWithValue(
@@ -37,6 +42,7 @@ export const loginUserAction = createAsyncThunk(
   async (credentials, { rejectWithValue }) => {
     try {
       const response = await loginUserApi(credentials);
+      // Optionally return response.data instead
       return response;
     } catch (error) {
       return rejectWithValue(
