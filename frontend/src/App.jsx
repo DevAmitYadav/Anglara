@@ -1,6 +1,5 @@
-// src/App.jsx
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Home from "./pages/Home";             // Imported Home component
+import { Route, Routes } from "react-router-dom"; // ✅ Remove HashRouter from here
+import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Navbar from "./pages/Navbar";
@@ -9,47 +8,43 @@ import Categories from "./pages/Categories";
 import CustomerForm from "./pages/CustomerForm";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Unauthorized from "./components/Unauthorized";
-import NotFound from "./components/NotFound"; // Imported NotFound component
+import NotFound from "./components/NotFound";
 
 function App() {
   return (
-    <Router>
-      <div className="flex flex-col min-h-screen">
-        {/* Navbar */}
-        <Navbar />
+    <div className="flex flex-col min-h-screen">
+      {/* Navbar */}
+      <Navbar />
 
-        {/* Main Content */}
-        <main className="flex-grow container mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-16">
-          <Routes>
-            {/* Home Route */}
-            <Route path="/" element={<Home />} />
+      {/* Main Content */}
+      <main className="flex-grow container mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-16">
+        <Routes> {/* ✅ Keep only Routes here */}
+          <Route path="/" element={<Home />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/customerForm" element={<CustomerForm />} />
 
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/customerForm" element={<CustomerForm />} />
+          {/* Protected route for Categories */}
+          <Route
+            path="/categories"
+            element={
+              <ProtectedRoute>
+                <Categories />
+              </ProtectedRoute>
+            }
+          />
 
-            {/* Protected route for Categories */}
-            <Route
-              path="/categories"
-              element={
-                <ProtectedRoute>
-                  <Categories />
-                </ProtectedRoute>
-              }
-            />
+          {/* Unauthorized Access */}
+          <Route path="/unauthorized" element={<Unauthorized />} />
 
-            {/* Route to handle unauthorized access */}
-            <Route path="/unauthorized" element={<Unauthorized />} />
+          {/* Catch-all for unmatched routes */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
 
-            {/* Catch-all route for unmatched paths */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
-
-        {/* Footer */}
-        <Footer />
-      </div>
-    </Router>
+      {/* Footer */}
+      <Footer />
+    </div>
   );
 }
 
