@@ -29,19 +29,48 @@ const loginSchema = z.object({
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 });
 
+/**
+ * Retrieves the user data from localStorage safely.
+ */
+function getUserRole() {
+  try {
+    const stored = localStorage.getItem("user");
+    if (!stored) return null;
+    const user = JSON.parse(stored);
+    return user?.role;
+  } catch (error) {
+    console.error("Error parsing user from localStorage:", error);
+    return null;
+  }
+}
+
+/**
+ * Navigates based on the user role.
+ */
+function navigateBasedOnRole(navigate) {
+  const role = getUserRole();
+  if (role === "Admin") {
+    navigate("/categories");
+  } else if (role === "Customer") {
+    navigate("/customerForm");
+  } else {
+    navigate("/");
+  }
+}
+
 function LoginForm() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Destructure with alias to match slice property names.
-  const { isLoading: loading, error, success, isAuthenticated } = useSelector(
-    (state) => state.auth
-  );
+  // Use a defensive selector (in case state.auth is undefined).
+  const { isLoading: loading, error, success, isAuthenticated } =
+    useSelector((state) => state.auth || {});
 
-  // Local state for UI feedback
+  // Local UI state
   const [showSuccess, setShowSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Setup react-hook-form using zodResolver with our schema.
   const {
     register,
     handleSubmit,
@@ -55,7 +84,7 @@ function LoginForm() {
     },
   });
 
-  // Memoized submit handler
+  // When the form is submitted, dispatch the login action.
   const onSubmit = useCallback(
     (values) => {
       dispatch(loginUserAction(values));
@@ -63,25 +92,14 @@ function LoginForm() {
     [dispatch]
   );
 
-  // Redirect immediately if already authenticated
+  // If the user is already authenticated, redirect immediately.
   useEffect(() => {
     if (isAuthenticated) {
-      try {
-        const user = JSON.parse(localStorage.getItem("user"));
-        if (user?.role === "Admin") {
-          navigate("/categories");
-        } else if (user?.role === "Customer") {
-          navigate("/customerForm");
-        } else {
-          navigate("/");
-        }
-      } catch (e) {
-        navigate("/");
-      }
+      navigateBasedOnRole(navigate);
     }
   }, [isAuthenticated, navigate]);
 
-  // When login is successful, show success message then redirect after 2 seconds
+  // When login is successful, show a success message for 2 seconds then redirect.
   useEffect(() => {
     if (success) {
       reset();
@@ -89,24 +107,13 @@ function LoginForm() {
       const timer = setTimeout(() => {
         setShowSuccess(false);
         dispatch(resetAuthState());
-        try {
-          const user = JSON.parse(localStorage.getItem("user"));
-          if (user?.role === "Admin") {
-            navigate("/categories");
-          } else if (user?.role === "Customer") {
-            navigate("/customerForm");
-          } else {
-            navigate("/");
-          }
-        } catch (e) {
-          navigate("/");
-        }
+        navigateBasedOnRole(navigate);
       }, 2000);
       return () => clearTimeout(timer);
     }
   }, [success, reset, dispatch, navigate]);
 
-  // Clear error message after 5 seconds if an error occurs
+  // Clear the error message after 5 seconds.
   useEffect(() => {
     if (error) {
       const timer = setTimeout(() => {
@@ -116,9 +123,11 @@ function LoginForm() {
     }
   }, [error, dispatch]);
 
-  // Derive detailed error message from the slice
+  // Derive error message. (Also handles the case where error might be an array.)
   const errorMessage =
-    typeof error === "string"
+    Array.isArray(error)
+      ? error.join(", ")
+      : typeof error === "string"
       ? error
       : error?.message || "Login failed. Please try again.";
 
