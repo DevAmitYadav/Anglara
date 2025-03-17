@@ -4,7 +4,7 @@ import {
   createCategoryThunk,
   updateCategoryThunk,
   deleteCategoryThunk,
-  bulkUpdateCategoryStatusThunk, // ✅ Import bulk update thunk
+  bulkUpdateCategoryStatusThunk,
 } from "../actions/categoryActions";
 
 // ─── Initial State ──────────────────────────────────────────────────
@@ -27,10 +27,12 @@ const categorySlice = createSlice({
         state.error = null;
       })
       .addCase(fetchCategoriesThunk.fulfilled, (state, action) => {
+        console.log("Fetched categories:", action.payload); // Debugging log
         state.isLoading = false;
-        state.categories = action.payload;
+        state.categories = Array.isArray(action.payload) ? action.payload : [];
       })
       .addCase(fetchCategoriesThunk.rejected, (state, action) => {
+        console.error("Fetch categories error:", action.payload); // Debugging log
         state.isLoading = false;
         state.error = action.payload;
       })
@@ -41,8 +43,7 @@ const categorySlice = createSlice({
       })
       .addCase(createCategoryThunk.fulfilled, (state, action) => {
         state.isLoading = false;
-        // Add the new category to the existing list
-        state.categories.push(action.payload);
+        if (action.payload) state.categories.push(action.payload);
       })
       .addCase(createCategoryThunk.rejected, (state, action) => {
         state.isLoading = false;
@@ -56,7 +57,7 @@ const categorySlice = createSlice({
       .addCase(updateCategoryThunk.fulfilled, (state, action) => {
         state.isLoading = false;
         const index = state.categories.findIndex(
-          (cat) => cat._id === action.payload._id
+          (cat) => cat._id === action.payload?._id
         );
         if (index !== -1) {
           state.categories[index] = action.payload;
@@ -81,15 +82,19 @@ const categorySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
-      // ✅ Bulk Update Category Status
+      // ✅ Bulk Update Category Status (Fixed)
       .addCase(bulkUpdateCategoryStatusThunk.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
       .addCase(bulkUpdateCategoryStatusThunk.fulfilled, (state, action) => {
+        console.log("Bulk Update Payload:", action.payload); // Debugging log
         state.isLoading = false;
-        // Update category statuses in the state
-        action.payload.forEach((updatedCategory) => {
+
+        // ✅ Ensure action.payload is an array before using .forEach()
+        const updatedCategories = Array.isArray(action.payload) ? action.payload : [];
+
+        updatedCategories.forEach((updatedCategory) => {
           const index = state.categories.findIndex(
             (cat) => cat._id === updatedCategory._id
           );
@@ -99,6 +104,7 @@ const categorySlice = createSlice({
         });
       })
       .addCase(bulkUpdateCategoryStatusThunk.rejected, (state, action) => {
+        console.error("Bulk update error:", action.payload); // Debugging log
         state.isLoading = false;
         state.error = action.payload;
       });
